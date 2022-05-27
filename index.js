@@ -76,6 +76,14 @@ async function run() {
   //   res.json(purchases);
   // })
   
+  app.get('/purchase', async (req, res) =>{
+    const userEmail = req.query.userEmail;
+    const query ={userEmail: userEmail}
+    const purchases = await purchaseCollection.find(query).toArray();
+    res.json(purchases);
+    
+  })
+  
   app.post("/purchase", async (req, res)=>{
     const purchase = req.body;
     const query = {toolsName: purchase.toolsName, userEmail: purchase.userEmail}
