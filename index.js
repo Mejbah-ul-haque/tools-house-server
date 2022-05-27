@@ -108,10 +108,16 @@ async function run() {
   
   app.get('/purchase', verifyJWT, async (req, res) =>{
     const userEmail = req.query.userEmail;    
-    console.log('auth headers', authorization)
-    const query ={userEmail: userEmail}
-    const purchases = await purchaseCollection.find(query).toArray();
-    res.json(purchases);
+    const decodedEmail = req.decoded.email;
+    if(userEmail === decodedEmail){
+      const query ={userEmail: userEmail}
+      const purchases = await purchaseCollection.find(query).toArray();
+      return res.json(purchases);
+    }
+    else{
+      return res.status(403).send({message: 'forbidden access'});
+    }
+    
     
   })
   
