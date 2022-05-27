@@ -20,6 +20,7 @@ async function run() {
     const serviceCollection = client.db('tools_house').collection('services');
     const reviewCollection = client.db('tools_house').collection('reviews');
     const purchaseCollection = client.db('tools_house').collection('purchases');
+    const blogCollection = client.db('tools_house').collection('blogs');
     
     // Reviews
     app.get('/review', async(req, res)=>{
@@ -30,6 +31,21 @@ async function run() {
     })
     
     
+    // Blog
+    app.get('/blog', async(req, res)=>{
+      const query ={};
+      const cursor = blogCollection.find(query);
+      const services = await cursor.toArray();
+      res.json(services);
+    })
+    
+    app.get('/blog/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await blogCollection.findOne(query);
+      res.json(result);
+  });
+  
     // Tools/Services
     app.get('/service', async(req, res)=>{
       const query ={};
@@ -44,6 +60,21 @@ async function run() {
       const result = await serviceCollection.findOne(query);
       res.json(result);
   });
+  
+  // app.get('/available', async (req, res) =>{
+  //   const quantity = req.query.quantity;
+  //   const services = await serviceCollection.find().toArray();
+  //   const query = {quantity: totalQuantity}
+  //   const purchases = await purchaseCollection.find(query).toArray();
+    
+  //   services.forEach(service => {
+  //     const servicePurchases = purchases.filter(purchase =>purchase.toolsName === service.name);
+  //     const purchaseQuantity = servicePurchases.map(purchase=>purchase.quantity);
+  //     const available = service.availableQuantity.filter(quantity =>!purchaseQuantity.includes(quantity));
+  //     service.availableQuantity = available;
+  //   })
+  //   res.json(purchases);
+  // })
   
   app.post("/purchase", async (req, res)=>{
     const purchase = req.body;
