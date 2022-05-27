@@ -21,6 +21,7 @@ async function run() {
     const reviewCollection = client.db('tools_house').collection('reviews');
     const purchaseCollection = client.db('tools_house').collection('purchases');
     const blogCollection = client.db('tools_house').collection('blogs');
+    const userCollection = client.db('tools_house').collection('users');
     
     // Reviews
     app.get('/review', async(req, res)=>{
@@ -60,6 +61,18 @@ async function run() {
       const result = await serviceCollection.findOne(query);
       res.json(result);
   });
+  
+  app.put('/user/:email', async (req, res) => {
+    const email = req.params.email;
+    const user = req.body;
+    const filter = {email: email};
+    const options = {upsert: true};
+    const updateDoc = {
+      $set: user,
+    };
+    const result = await userCollection.updateOne(filter, updateDoc, options);
+    res.json(result);
+  })
   
   // app.get('/available', async (req, res) =>{
   //   const quantity = req.query.quantity;
