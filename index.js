@@ -41,6 +41,20 @@ async function run() {
 		const purchaseCollection = client.db("tools_house").collection("purchases");
 		const blogCollection = client.db("tools_house").collection("blogs");
 		const userCollection = client.db("tools_house").collection("users");
+		const productCollection = client.db("tools_house").collection("products");
+		
+		const verifyAdmin = async(req, res, next) =>{
+			const requester = req.decoded.email;
+			const requesterAccount = await userCollection.findOne({
+				email: requester,
+			});
+			if (requesterAccount.role === "admin"){
+				next();
+			}
+			else{
+        res.status(403).send({message: "forbidden"})
+      }
+		}
 
 		// Reviews
 		app.get("/review", async (req, res) => {
@@ -169,6 +183,13 @@ async function run() {
 			const result = await purchaseCollection.insertOne(purchase);
 			return res.json({ success: true, result });
 		});
+		
+		// post Product
+		app.post('/product', verifyJWT, verifyAdmin, async (req, res) =>{
+			const product = req.body;
+			const result = await productCollection.insertOne(product);
+			res.json(result);
+		})
 	} finally {
 	}
 }
