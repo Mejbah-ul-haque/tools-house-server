@@ -175,6 +175,11 @@ async function run() {
 			return res.json({ success: true, result });
 		});
 		
+		app.get('/product', verifyJWT, verifyAdmin, async (req, res) => {
+			const products = await productCollection.find().toArray();
+			res.json(products);
+		})
+		
 		// post Product
 		app.post('/product', verifyJWT, verifyAdmin, async (req, res) =>{
 			const product = req.body;
