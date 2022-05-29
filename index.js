@@ -178,15 +178,24 @@ async function run() {
 		app.get('/product', verifyJWT, verifyAdmin, async (req, res) => {
 			const products = await productCollection.find().toArray();
 			res.json(products);
-		})
+		});
 		
 		// post Product
 		app.post('/product', verifyJWT, verifyAdmin, async (req, res) =>{
 			const product = req.body;
 			const result = await productCollection.insertOne(product);
 			res.json(result);
-		})
-	} finally {
+		});
+		
+		app.delete('/product/:id', verifyJWT, verifyAdmin, async (req, res) =>{
+			const email = req.params.email;
+			const filter = {email: email}
+			const result = await productCollection.deleteOne(filter);
+			res.json(result);
+		});
+		
+	} 
+	finally {
 	}
 }
 
