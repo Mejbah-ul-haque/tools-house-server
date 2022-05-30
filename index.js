@@ -236,9 +236,10 @@ async function run() {
 		})
 		
 		app.delete('/purchase/:id', async (req, res) =>{
-			const email = req.params.email;
-			const query = { email: email}
+			const id = req.params.id;
+			const query = { _id: ObjectId(id)}
 			const result = await purchaseCollection.deleteOne(query);
+			console.log(result);
 			res.json(result);
 		});
 		
