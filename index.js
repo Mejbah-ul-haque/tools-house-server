@@ -44,6 +44,7 @@ async function run() {
 		const blogCollection = client.db("tools_house").collection("blogs");
 		const userCollection = client.db("tools_house").collection("users");
 		const productCollection = client.db("tools_house").collection("products");
+		const paymentCollection = client.db("tools_house").collection("payments");
 		
 		const verifyAdmin = async(req, res, next) =>{
 			const requester = req.decoded.email;
@@ -57,6 +58,13 @@ async function run() {
         res.status(403).send({message: "forbidden"})
       }
 		}
+		
+		app.get("/payment", async (req, res) => {
+			const query = {};
+			const cursor = paymentCollection.find(query);
+			const payments = await cursor.toArray();
+			res.json(payments);
+		});
 
 		// Reviews
 		app.get("/review", async (req, res) => {
@@ -114,6 +122,12 @@ async function run() {
 			const id = req.params.id;
 			const query = { _id: ObjectId(id) };
 			const result = await serviceCollection.findOne(query);
+			res.json(result);
+		});
+		
+		app.post('/service', verifyJWT, verifyAdmin, async (req, res) =>{
+			const service = req.body;
+			const result = await serviceCollection.insertOne(service);
 			res.json(result);
 		});
 
@@ -205,10 +219,26 @@ async function run() {
 			return res.json({ success: true, result });
 		});
 		
-		app.delete('/purchase/:id', verifyJWT, verifyAdmin, async (req, res) =>{
+		app.patch("/purchase/:id", verifyJWT, async (req, res) =>{
+			const id = req.params.id;
+			const payment =req.body;
+			const filter = { _id: ObjectId(id) };
+			const updatedDoc = {
+				$set:{
+					paid: true,
+					transactionId: payment.transactionId
+				}
+			}
+			
+			const result = await paymentCollection.insertOne(payment);
+			const updatedPurchase = await purchaseCollection.updateOne(filter, updatedDoc);
+			res.send(updatedDoc);
+		})
+		
+		app.delete('/purchase/:id', async (req, res) =>{
 			const email = req.params.email;
-			const filter = {email: email}
-			const result = await purchaseCollection.deleteOne(filter);
+			const query = { email: email}
+			const result = await purchaseCollection.deleteOne(query);
 			res.json(result);
 		});
 		
