@@ -88,6 +88,19 @@ async function run() {
 			const result = await blogCollection.findOne(query);
 			res.json(result);
 		});
+		
+		// Payment Method
+		app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+			const service = req.body;
+			const price = service.price;
+			const amount = price*100;
+			const paymentIntent = await stripe.paymentIntents.create({
+				amount : amount,
+				currency : 'usd',
+				payment_method_types:['card']
+			});
+			res.send({clientSecret: paymentIntent.client_secret})
+		});
 
 		// Tools/Services
 		app.get("/service", async (req, res) => {
