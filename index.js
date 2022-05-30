@@ -3,6 +3,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -20,6 +21,7 @@ const client = new MongoClient(uri, {
 
 function verifyJWT(req, res, next) {
 	const authHeader = req.headers.authorization;
+	console.log(authHeader);
 	if (!authHeader) {
 		return res.status(401).send({ message: "UnAuthorized access" });
 	}
@@ -63,6 +65,13 @@ async function run() {
 			const reviews = await cursor.toArray();
 			res.json(reviews);
 		});
+		
+		// post review
+		app.post('/review', verifyJWT, verifyAdmin, async (req, res) =>{
+			const review = req.body;
+			const result = await reviewCollection.insertOne(review);
+			res.json(result);
+		});
 
 		// Blog
 		app.get("/blog", async (req, res) => {
@@ -71,7 +80,8 @@ async function run() {
 			const services = await cursor.toArray();
 			res.json(services);
 		});
-
+		
+			
 		app.get("/blog/:id", async (req, res) => {
 			const id = req.params.id;
 			const query = { _id: ObjectId(id) };
@@ -160,6 +170,13 @@ async function run() {
 				return res.status(403).send({ message: "forbidden access" });
 			}
 		});
+		
+		app.get("/purchase/:id", verifyJWT, async (req, res) => {
+			const id = req.params.id;
+			const query = { _id: ObjectId(id) };
+			const purchase = await purchaseCollection.findOne(query);
+			res.json(purchase);
+		})
 
 		app.post("/purchase", async (req, res) => {
 			const purchase = req.body;
@@ -175,8 +192,17 @@ async function run() {
 			return res.json({ success: true, result });
 		});
 		
+		app.delete('/purchase/:id', verifyJWT, verifyAdmin, async (req, res) =>{
+			const email = req.params.email;
+			const filter = {email: email}
+			const result = await purchaseCollection.deleteOne(filter);
+			res.json(result);
+		});
+		
+		// Product
+			
 		app.get('/product', verifyJWT, verifyAdmin, async (req, res) => {
-			const products = await productCollection.find().toArray();
+			const products = await productCollection.find({}).toArray();
 			res.json(products);
 		});
 		
